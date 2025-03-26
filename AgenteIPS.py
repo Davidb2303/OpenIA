@@ -1,6 +1,7 @@
 import openai
 import os
 import fitz
+import json
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -14,8 +15,7 @@ class Sueroterapia:
             "Détox Básico": Subagente("Détox Básico", contenido, "medium"),
             "Détox Avanzado": Subagente("Détox Avanzado", contenido, "medium"),
             "Metabólico": Subagente("Metabólico", contenido, "medium"),
-            "Metodos de Pago": Subagente("Metodos de Pago", contenido, "low"),
-            
+            "Métodos de Pago": Subagente("Métodos de Pago", contenido, "low")
         }
     
     def seleccionar_subagente(self, prompt):
@@ -49,7 +49,7 @@ class Subagente:
             
             config = niveles_config[self.nivel]
             
-            prompt_completo = f"Explica detalladamente sobre '{self.nombre}' en relación a la siguiente pregunta: '{prompt}'.\n\n{self.contenido}"
+            prompt_completo = f"Responde exclusivamente sobre '{self.nombre}' en relación a la siguiente pregunta: '{prompt}'.\n\n{self.contenido}"
             
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -63,9 +63,15 @@ class Subagente:
                 presence_penalty=0,
             )
             
-            return f"Subagente: {self.nombre}\n{response.choices[0].message.content}"
+            return json.dumps({
+                "subagente": self.nombre,
+                "nivel": self.nivel,
+                "respuesta": response.choices[0].message.content
+            }, indent=4, ensure_ascii=False)
         except Exception as e:
-            return f"Error al procesar la pregunta con {self.nombre}: {str(e)}"
+            return json.dumps({
+                "error": f"Error al procesar la pregunta con {self.nombre}: {str(e)}"
+            }, indent=4, ensure_ascii=False)
 
 def leer_documento(ruta_archivo):
     try:
