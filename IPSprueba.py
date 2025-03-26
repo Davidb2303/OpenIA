@@ -20,15 +20,31 @@ def leer_documento(ruta_archivo):
     except Exception as e:
         return f"Error al leer el archivo: {str(e)}"
 
-def analizar_documento(contenido):
+def analizar_documento(contenido, nivel='high'):
+    
+    
     
     try:
+        niveles_config = {
+            "low": {"temperature": 0.2, "max_tokens": 100, "top_p": 0.5},
+            "medium": {"temperature": 0.7, "max_tokens": 256, "top_p": 0.8},
+            "high": {"temperature": 1.0, "max_tokens": 400, "top_p": 1.0}
+        }
+        
+        config = niveles_config[nivel]
+
+        prompt = f"Explica el tratamiento de sueroterapia con un nivel de razonamiento {nivel}.\n\n{contenido}"
+        
         response = client.chat.completions.create(
-            model="gpt-4-turbo",
+            model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "Eres un asistente experto en análisis de documentos y dar respuestas en español y sensatas."},
-                {"role": "user", "content": f"Dame detalles del tratamiento de sueroterapia:\n\n{contenido}"}
+                {"role": "user", "content": prompt}
             ],
+            temperature=config['temperature'],
+            max_tokens=config['max_tokens'],
+            top_p=config['top_p'],
+            frequency_penalty=0,
+            presence_penalty=0,
         )
         return response.choices[0].message.content
     except Exception as e:
