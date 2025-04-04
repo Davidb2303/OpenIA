@@ -3,9 +3,8 @@ import os
 import fitz  
 import json
 
-API_KEY = "" #Reemplazar por mi Api Key
+API_KEY = "" #Reemplazar por Api Key
 
-# Ruta del documento
 RUTA_DOCUMENTO = os.path.join(os.getcwd(), "actual IPS.pdf")
 
 class Sueroterapia:
@@ -45,10 +44,8 @@ class Subagente:
    
     def generar_respuesta(self, prompt):
         try:
-            
             client = openai.OpenAI(api_key=API_KEY)
             
-            # Configurar el nivel de razonamiento si está disponible
             additional_params = {}
             if self.reasoning_effort == "high":
                 
@@ -71,12 +68,12 @@ class Subagente:
             
             
             response = client.chat.completions.create(
-                model="gpt-4o",  
+                model="o3-mini",  
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": prompt}
                 ],
-                **additional_params
+                **({} if "o3-mini" in "o3-mini" else additional_params)
             )
             
             
@@ -126,4 +123,3 @@ if __name__ == "__main__":
                 break
             except Exception as e:
                 print(f"\nError inesperado: {str(e)}")
-
